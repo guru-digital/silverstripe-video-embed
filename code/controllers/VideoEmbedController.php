@@ -3,6 +3,9 @@
 class videoEmbedController extends Controller {
 
     private static $allowed_actions = array('getOembedData');
+    private static $url_handlers = array(
+        'video-embed/oembed.json'   =>  'getOembedData'
+    );
 
     public function GetOembedData(SS_HTTPRequest $request) {
         $response = "{}";

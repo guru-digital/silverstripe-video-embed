@@ -115,7 +115,9 @@
                         videoCode = this.val(),
                         parsedUrl = urlParser.parse(videoCode),
                         videoEmbedType = parsedUrl && parsedUrl.provider ? videoEmbedTypes[parsedUrl.provider] : null,
-                        baseHref = $("base").attr("href");
+                        baseHref = $("base").attr("href"),
+                        viedoType = $typeSelect.val().toLowerCase();
+
                 if (videoCode) {
                     if (parsedUrl && videoEmbedType) {
                         videoEmbedType = videoEmbedTypes[parsedUrl.provider];
@@ -123,14 +125,14 @@
                         videoCode = parsedUrl.id;
                         this.val(videoCode);
                     }
-                    for (var item in videoEmbedTypes) {
-                        if ($typeSelect.val() === item.label) {
-                            videoEmbedType = item;
+                    for (var key in videoEmbedTypes) {
+                        if (key.toLowerCase() === viedoType && videoEmbedTypes[key]) {
+                            videoEmbedType = videoEmbedTypes[key];
                             break;
                         }
                     }
                     if (videoEmbedType && videoEmbedType.url) {
-                        $.post(baseHref + 'videoEmbedController/getOembedData/', {url: videoEmbedType.url.replace("{CODE}", videoCode)}, function (data) {
+                        $.post(baseHref + 'video-embed/oembed.json', {url: videoEmbedType.url.replace("{CODE}", videoCode)}, function (data) {
                             if (data && data.type === "video") {
                                 if (data.thumbnail_url && $thumbnailSelect.val() === "URL") {
                                     $thumbnailURLField.val(data.thumbnail_url).change();

@@ -49,7 +49,7 @@ class VideoEmbed extends DataObject {
         $res = "";
         if ($this->ThumbnailURL) {
             $res = $this->ThumbnailURL;
-        } else if ($this->ThumbnailFile()) {
+        } else if ($this->ThumbnailFile()&& $this->ThumbnailFile()->exists()) {
             $res = $this->ThumbnailFile()->getURL();
         }
         return $res;
@@ -57,9 +57,15 @@ class VideoEmbed extends DataObject {
 
     function Thumbnail() {
         $res = HTMLText::create();
+        $url = null;
         $res->setValue("<em>No thumbnail found</em>");
         if ($this->GetThumbURL()) {
-            $res->setValue("<img src='" . $this->GetThumbURL() . "' style='max-width: 120px; height: auto;' />");
+            $url = $this->GetThumbURL();
+        }elseif ($this->Type == "YouTube" && $this->Code) {
+            $url = "https://img.youtube.com/vi/".$this->Code."/0.jpg";
+        }
+        if ($url){
+            $res->setValue("<img src='" . $url . "' style='max-width: 120px; height: auto;' />");
         }
         return $res;
     }
