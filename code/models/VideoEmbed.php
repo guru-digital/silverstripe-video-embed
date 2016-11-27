@@ -70,6 +70,15 @@ class VideoEmbed extends DataObject {
         return $res;
     }
 
+    public function getTitle()
+    {
+        $title = parent::getTitle();
+        if (!$title){
+            $title=$this->GetOembed()->getField("Title");
+        }
+        return $title;
+    }
+
     function CMSThumbnail() {
         return $this->Thumbnail();
     }
@@ -246,7 +255,7 @@ class VideoEmbed extends DataObject {
 
     /**
      *
-     * @returns Oembed_Result/bool An Oembed descriptor, or false
+     * @return Oembed_Result|bool An Oembed descriptor, or false
      */
     public function GetOembed() {
         $res = false;
