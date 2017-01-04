@@ -9,8 +9,8 @@
  * @property Image $ThumbnailFile Associated Thumbnail image ( empty if ThumbnailURL is used )
  * @property File $HTML5Video Associated video file ( empty if Code is used )
  */
-class VideoEmbed extends DataObject {
-
+class VideoEmbed extends DataObject
+{
     static $singular_name             = 'Video';
     static $plural_name               = 'Videos';
     private static $db                = array(
@@ -45,27 +45,29 @@ class VideoEmbed extends DataObject {
      */
     private $settings = false;
 
-    function GetThumbURL() {
+    function GetThumbURL()
+    {
         $res = "";
         if ($this->ThumbnailURL) {
             $res = $this->ThumbnailURL;
-        } else if ($this->ThumbnailFile()&& $this->ThumbnailFile()->exists()) {
+        } else if ($this->ThumbnailFile() && $this->ThumbnailFile()->exists()) {
             $res = $this->ThumbnailFile()->getURL();
         }
         return $res;
     }
 
-    function Thumbnail() {
+    function Thumbnail()
+    {
         $res = HTMLText::create();
         $url = null;
         $res->setValue("<em>No thumbnail found</em>");
         if ($this->GetThumbURL()) {
             $url = $this->GetThumbURL();
-        }elseif ($this->Type == "YouTube" && $this->Code) {
+        } elseif ($this->Type == "YouTube" && $this->Code) {
             $url = "https://img.youtube.com/vi/".$this->Code."/0.jpg";
         }
-        if ($url){
-            $res->setValue("<img src='" . $url . "' style='max-width: 120px; height: auto;' />");
+        if ($url) {
+            $res->setValue("<img src='".$url."' style='max-width: 120px; height: auto;' />");
         }
         return $res;
     }
@@ -73,20 +75,22 @@ class VideoEmbed extends DataObject {
     public function getTitle()
     {
         $title = parent::getTitle();
-        if (!$title){
-            $title=$this->GetOembed()->getField("Title");
+        if (!$title) {
+            $title = $this->GetOembed()->getField("Title");
         }
         return $title;
     }
 
-    function CMSThumbnail() {
+    function CMSThumbnail()
+    {
         return $this->Thumbnail();
     }
 
-    public function getCMSFields() {
+    public function getCMSFields()
+    {
         Requirements::css('silverstripe-video-embed/assests/css/VideoEmbedEditor.css');
         Requirements::javascript('silverstripe-video-embed/assests/javascript/urlParser.min.js');
-        Requirements::javascript(THIRDPARTY_DIR . '/json-js/json2.js');
+        Requirements::javascript(THIRDPARTY_DIR.'/json-js/json2.js');
         Requirements::javascript('silverstripe-video-embed/assests/javascript/VideoEmbedEditor.js');
 
         $Fields        = parent::getCMSFields();
@@ -125,8 +129,11 @@ class VideoEmbed extends DataObject {
         $ThumbnailUploadField                                    = new UploadField('ThumbnailFile', '');
         $ThumbnailUploadField->getValidator()->allowedExtensions = array('jpg', 'jpeg', 'gif', 'png');
         $ThumbnailUploadField->setAllowedMaxFileNumber(1);
-        $thumbnailField                                          = new SelectionGroup('ThumbnailGroup', array(
-            SelectionGroup_Item::create('URL', array(LiteralField::create('ThumbPreview', '
+        $thumbnailField                                          = new SelectionGroup('ThumbnailGroup',
+                                                                                      array(
+            SelectionGroup_Item::create('URL',
+                                        array(LiteralField::create('ThumbPreview',
+                                                                   '
                 <div class="ss-uploadfield ">
                     <div class="ss-uploadfield-item ss-uploadfield-addfile middleColumn">
                         <div class="ss-uploadfield-item-preview ss-uploadfield-dropzone ui-corner-all" style="display: block; margin: 0" id="ThumbnailURLHolder">
@@ -147,11 +154,13 @@ class VideoEmbed extends DataObject {
         } else if ($this->ThumbnailFile()->exists()) {
             $thumbnailField->setValue("File");
         }
-        $fields[] = LiteralField::create("guestLabel", '<div id="Thumbnail" class="field text">
+        $fields[] = LiteralField::create("guestLabel",
+                                         '<div id="Thumbnail" class="field text">
             <label class="left" for="Form_ItemEditForm_Value">Thumbnail</label>
             <div class="middleColumn">');
         $fields[] = $thumbnailField;
-        $fields[] = LiteralField::create("guestLabel", ' <input type="text" name="Value" class="text" id="Form_ItemEditForm_Value">
+        $fields[] = LiteralField::create("guestLabel",
+                                         ' <input type="text" name="Value" class="text" id="Form_ItemEditForm_Value">
             </div>
         </div>');
         $fields[] = new HiddenField("VideoTypesHolder", "VideoTypesHolder", Convert::raw2json($types));
@@ -161,7 +170,8 @@ class VideoEmbed extends DataObject {
         return $Fields;
     }
 
-    public function GetVideoTypes() {
+    public function GetVideoTypes()
+    {
         return Config::inst()->get('VideoEmbed', 'VideoTypes');
     }
 
@@ -169,7 +179,8 @@ class VideoEmbed extends DataObject {
      *
      * @return VideoEmbedSettings
      */
-    public function GetSettings() {
+    public function GetSettings()
+    {
         if (!$this->settings) {
             $this->settings = new VideoEmbedSettings();
             foreach ($this->GetVideoTypes() as $videoType) {
@@ -184,7 +195,8 @@ class VideoEmbed extends DataObject {
         return $this->settings;
     }
 
-    public function GetEmbedCode() {
+    public function GetEmbedCode()
+    {
         $res = false;
         if ($this->Type == 'HTML 5/Flash' && $this->HTML5Video()->exists()) {
             $res = $this->renderWith("VideoEmbedHTML5");
@@ -193,13 +205,14 @@ class VideoEmbed extends DataObject {
             if ($oembed) {
                 $res = $oembed->forTemplate();
             } else {
-                $res = '<pre class="debug"> "$oembed"' . PHP_EOL . print_r($oembed, true) . PHP_EOL . '</pre>';
+                $res = '<pre class="debug"> "$oembed"'.PHP_EOL.print_r($oembed, true).PHP_EOL.'</pre>';
             }
         }
         return $res;
     }
 
-    public function GetUrl() {
+    public function GetUrl()
+    {
         $url = false;
         if ($this->Type == 'HTML 5/Flash' && $this->HTML5Video()->exists()) {
             $url = Director::absoluteURL($this->HTML5Video()->GetURL());
@@ -209,7 +222,8 @@ class VideoEmbed extends DataObject {
         return $url;
     }
 
-    public function GetEmbedUrl($width = null, $height = null, $autoplay = null) {
+    public function GetEmbedUrl($width = null, $height = null, $autoplay = null)
+    {
         if (!is_null($width)) {
             $this->setWidth($width);
         }
@@ -233,20 +247,20 @@ class VideoEmbed extends DataObject {
                         $parsedUrl["query"] = "";
                     }
                     if (!isset($parsedUrl["scheme"])) {
-                        $parsedUrl["scheme"] = "http" . ( isset($_SERVER['HTTPS']) ? 's' : '');
+                        $parsedUrl["scheme"] = "http".( isset($_SERVER['HTTPS']) ? 's' : '');
                     }
                     parse_str($parsedUrl["query"], $query);
                     if (!isset($query["autoplay"])) {
                         $query["autoplay"] = 1;
                     }
                     $query["rel"] = 0;
-                    $url          = $parsedUrl['scheme'] . '://'
-                            . ((isset($parsedUrl['user'])) ? $parsedUrl['user'] . ((isset($parsedUrl['pass'])) ? ':' . $parsedUrl['pass'] : '') . '@' : '')
-                            . ((isset($parsedUrl['host'])) ? $parsedUrl['host'] : '')
-                            . ((isset($parsedUrl['port'])) ? ':' . $parsedUrl['port'] : '')
-                            . ((isset($parsedUrl['path'])) ? $parsedUrl['path'] : '')
-                            . '?' . http_build_query($query)
-                            . ((isset($parsedUrl['fragment'])) ? '#' . $parsedUrl['fragment'] : '');
+                    $url          = $parsedUrl['scheme'].'://'
+                        .((isset($parsedUrl['user'])) ? $parsedUrl['user'].((isset($parsedUrl['pass'])) ? ':'.$parsedUrl['pass'] : '').'@' : '')
+                        .((isset($parsedUrl['host'])) ? $parsedUrl['host'] : '')
+                        .((isset($parsedUrl['port'])) ? ':'.$parsedUrl['port'] : '')
+                        .((isset($parsedUrl['path'])) ? $parsedUrl['path'] : '')
+                        .'?'.http_build_query($query)
+                        .((isset($parsedUrl['fragment'])) ? '#'.$parsedUrl['fragment'] : '');
                 }
             }
         }
@@ -257,7 +271,8 @@ class VideoEmbed extends DataObject {
      *
      * @return Oembed_Result|bool An Oembed descriptor, or false
      */
-    public function GetOembed() {
+    public function GetOembed()
+    {
         $res = false;
         if ($this->Type !== 'HTML 5/Flash' && $this->GetUrl()) {
             $options = array();
@@ -280,7 +295,8 @@ class VideoEmbed extends DataObject {
         return $res;
     }
 
-    public function GetMimeType() {
+    public function GetMimeType()
+    {
         $res = false;
         if ($this->HTML5Video()) {
             $res = HTTP::get_mime_type($this->HTML5Video()->getFilename());
@@ -292,52 +308,63 @@ class VideoEmbed extends DataObject {
         return $res;
     }
 
-    public function GetSetupData() {
+    public function GetSetupData()
+    {
         $settings = array();
         if ($this->GetSettings()->pluginTech) {
-            $settings[] = '"techOrder": ["' . $this->GetSettings()->pluginTech . '"]';
+            $settings[] = '"techOrder": ["'.$this->GetSettings()->pluginTech.'"]';
         }
         if ($this->GetSettings()->url) {
-            $settings[] = '"src": "' . $this->GetSettings()->url . '"';
+            $settings[] = '"src": "'.$this->GetSettings()->url.'"';
         }
-        return '{' . implode(", ", $settings) . '}';
+        return '{'.implode(", ", $settings).'}';
     }
 
-    public function setTemplateRequirements() {
+    public function setTemplateRequirements()
+    {
         Requirements::css('silverstripe-video-embed/assests/javascript/video-js/video-js.min.css');
         Requirements::javascript('silverstripe-video-embed/assests/javascript/video-js/video.js');
-        Requirements::javascriptTemplate('silverstripe-video-embed/assests/javascript/VideoEmbedSWFTemplate.js', array("videoembed_swf_file" => Director::absoluteBaseURL() . 'silverstripe-video-embed/assests/javascript/video-js/video-js.swf'), 'VideoEmbed');
+        Requirements::javascriptTemplate('silverstripe-video-embed/assests/javascript/VideoEmbedSWFTemplate.js',
+                                         array("videoembed_swf_file" => Director::absoluteBaseURL().'silverstripe-video-embed/assests/javascript/video-js/video-js.swf'),
+                                         'VideoEmbed');
         if ($this->GetSettings()->pluginFile) {
-            Requirements::javascript('silverstripe-video-embed/assests/javascript/video-js/plugins/' . $this->GetSettings()->pluginFile);
+            Requirements::javascript('silverstripe-video-embed/assests/javascript/video-js/plugins/'.$this->GetSettings()->pluginFile);
         }
     }
 
-    public function forTemplate() {
+    public function forTemplate()
+    {
         $this->setTemplateRequirements();
         return $this->renderWith('VideoEmbed');
     }
 
-    public function getWidth() {
+    public function getWidth()
+    {
         return $this->width;
     }
 
-    public function getHeight() {
+    public function getHeight()
+    {
         return $this->height;
     }
 
-    public function getAutoPlay() {
+    public function getAutoPlay()
+    {
         return $this->autoPlay;
     }
 
-    public function setWidth($width) {
+    public function setWidth($width)
+    {
         $this->width = $width;
     }
 
-    public function setHeight($height) {
+    public function setHeight($height)
+    {
         $this->height = $height;
     }
 
-    public function setAutoPlay($autoPlay) {
+    public function setAutoPlay($autoPlay)
+    {
         $this->autoPlay = $autoPlay;
     }
 
@@ -346,7 +373,8 @@ class VideoEmbed extends DataObject {
      * @param string $url
      * @return VideoEmbed Description
      */
-    public static function GetByURL($url) {
+    public static function GetByURL($url)
+    {
         $result = false;
         $url    = preg_replace('/_resampled\/[^-]+-/', '', Director::makeRelative($url));
         $file   = File::get()->filter('Filename', $url)->first();
@@ -356,22 +384,22 @@ class VideoEmbed extends DataObject {
         return $result && $result->exists() ? $result : false;
     }
 
-    public function GetOembedJson() {
+    public function GetOembedJson()
+    {
         $res                = new stdClass();
         $res->type          = "video";
         $res->version       = 1.0;
-        $res->title         = $this->Title;
+        $res->title         = property_exists($this, "Title") ? $this->Title : "";
         $res->thumbnail_url = Director::absoluteURL($this->GetThumbURL());
         $res->html          = (string) $this->forTemplate();
         $res->width         = $this->getWidth();
         $res->height        = $this->getHeight();
         return Convert::raw2json($res);
     }
-
 }
 
-class VideoEmbedSettings {
-
+class VideoEmbedSettings
+{
     public $label      = "";
     public $hide       = "";
     public $show       = "";
