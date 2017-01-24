@@ -284,13 +284,14 @@ class VideoEmbed extends DataObject
             }
             $options['autoplay'] = $this->getAutoPlay() ? 1 : 0;
             $res                 = Oembed::get_oembed_from_url($this->GetSettings()->url, false, $options);
-        } else {
+        } else if ($this->GetUrl()) {
             $res         = new Oembed_Result($this->GetUrl());
             $refObject   = new ReflectionObject($res);
             $refProperty = $refObject->getProperty('data');
             $refProperty->setAccessible(true);
             $refProperty->setValue($res, Convert::json2array($this->GetOembedJson()));
-//    }
+        } else {
+            $res = new Oembed_Result("");
         }
         return $res;
     }
