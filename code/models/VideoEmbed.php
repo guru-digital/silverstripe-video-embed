@@ -76,7 +76,8 @@ class VideoEmbed extends DataObject
     {
         $title = parent::getTitle();
         if (!$title) {
-            $title = $this->GetOembed()->getField("Title");
+            $oembed = $this->GetOembed();
+            $title  = $oembed ? $oembed->getField("Title") : "";
         }
         return $title;
     }
